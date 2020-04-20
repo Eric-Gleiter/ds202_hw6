@@ -1,9 +1,100 @@
 ---
 title: "Homework 6"
 author: "Eric Gleiter"
-date: "4/10/2020"
+date: "4/16/2020"
 output: html_document
 ---
 **Homework 6**
 Eric Gleiter
 DS202
+
+*Note all set up and library/package loading and checking is omitted on the html for readability*
+```{r include=FALSE}
+if (!require("tidyverse")) {
+install.packages("tidyverse")
+}
+if (!require("dplyr")) {
+install.packages("dplyr")
+}
+if (!require("ggplot2")) {
+install.packages("ggplot2")
+}
+if (!require("readxl")) {
+install.packages("readxl")
+}
+if (!require("lubridate")) {
+install.packages("lubridate")
+}
+
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dbplyr)
+library(readxl)
+library(lubridate)
+
+bestInShow <- read_xlsx("DogData.xlsx",sheet = "Best in show",skip = 5)
+bestInShowFull <- read_xlsx("DogData.xlsx",sheet = "Best in show full sheet", skip = 2)
+
+
+```
+
+```{r}
+#data cleaning
+#here we remove the first row which explains the column scores and we drop the columns where all values are null
+#these columns are the grey columns in the excel and are only there for visual reasons
+not_all_na <- function(x) any(!is.na(x))
+bestInShow <- bestInShow[-1,]
+bestInShow <- bestInShow %>%
+  select_if(not_all_na)
+
+bestInShowFull <- bestInShowFull[-1,]
+bestInShowFull <- bestInShowFull %>%
+  mutate(Dog_Breed = `Sources - see bottom right`) %>%
+  select_if(not_all_na) %>%
+  select(-`Sources - see bottom right`)
+
+#we then subset the data  for the popular rating column to have no na values as these are all the dogs included in the infographic
+bestInShowFullClean <- bestInShowFull %>%
+  filter(!is.na(`POPULAR RATING`)) %>%
+  mutate(`POPULAR RATING` = as.numeric(`POPULAR RATING`)) %>%
+  mutate(`ULTIMATE TOP DOG MEGA SCORE` = as.numeric(`ULTIMATE TOP DOG MEGA SCORE`))# %>%
+#  mutate(IntellegenceEitherOr = #use ifelse to find a true or false for size
+
+#soucre for the not all na function link : https://stackoverflow.com/questions/2643939/remove-columns-from-dataframe-where-all-values-are-na
+```
+
+```{r}
+#making the graphic
+  #need 
+    #Breed of dog - geom_text on a point - - columns name : Dog_Breed
+    #Dog category - color of point - columns name : category
+    #Size of dog - size of point - columns name : size category
+    #data score - x aixs - columns name : ultimate top dog data score
+    #popularity - y axis - columns name : popular rating 
+    #intellegence - shape of point - columns name : intellengence category 
+      #need to mutate a column to do either or
+    #Legnends and explainations
+ggplot(data = bestInShowFullClean, aes(x=`ULTIMATE TOP DOG MEGA SCORE`, 
+                                       y=`POPULAR RATING`, 
+                                       color = category)) +
+  geom_point(aes(shape = `size category`)) +
+  geom_text(aes(label=Dog_Breed,
+                vjust = 1.3),
+            size = 2.5,
+            alpha = .75) + 
+  scale_shape_manual(values = c(1,1.75,2.75)) + 
+  scale_x_continuous(limits = c(.97,3.70)) +
+  ylim(-3.0,95.0) +
+  xlab("Data Score") + 
+  ylab("Popularity") +
+  labs(title = "Best in Show: The Ultimate Data Dog V2",color = "Dog Type", shape = "Dog Size") +
+  theme(
+   axis.text.x = element_blank(),
+   axis.text.y = element_blank(),
+   axis.ticks = element_blank()) 
+  
+
+```
