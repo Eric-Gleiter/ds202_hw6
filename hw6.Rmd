@@ -1,0 +1,9 @@
+---
+title: "Homework 6"
+author: "Eric Gleiter"
+date: "4/10/2020"
+output: html_document
+---
+**Homework 6**
+Eric Gleiter
+DS202
