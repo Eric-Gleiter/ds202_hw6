@@ -86,7 +86,7 @@ ggplot(data = bestInShowFullClean, aes(x=`ULTIMATE TOP DOG MEGA SCORE`,
             size = 2.5,
             alpha = .75) + 
   scale_x_continuous(limits = c(.97,3.70)) +
-  ylim(-95,1) + #For some reason the defualt bounds squish everything together
+  ylim(-95,1) + 
   xlab("Data Score") + 
   ylab("Popularity") +
   labs(title = "Best in Show: The Ultimate Data Dog V2",color = "Dog Type", shape = "Dog Size", size = "Intelligence") +
