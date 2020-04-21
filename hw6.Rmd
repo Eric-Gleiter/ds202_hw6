@@ -60,41 +60,58 @@ bestInShowFull <- bestInShowFull %>%
 bestInShowFullClean <- bestInShowFull %>%
   filter(!is.na(`POPULAR RATING`)) %>%
   mutate(`POPULAR RATING` = as.numeric(`POPULAR RATING`)) %>%
-  mutate(`ULTIMATE TOP DOG MEGA SCORE` = as.numeric(`ULTIMATE TOP DOG MEGA SCORE`))# %>%
-#  mutate(IntellegenceEitherOr = #use ifelse to find a true or false for size
+  mutate(popularScale = 0-`POPULAR RATING`) %>%
+  mutate(`ULTIMATE TOP DOG MEGA SCORE` = as.numeric(`ULTIMATE TOP DOG MEGA SCORE`)) %>%
+  mutate(IntellegenceEitherOr = `intelligence category` %in% c("Above average","Excellent","Brightest"))
 
 #soucre for the not all na function link : https://stackoverflow.com/questions/2643939/remove-columns-from-dataframe-where-all-values-are-na
 ```
 
-```{r}
-#making the graphic
-  #need 
-    #Breed of dog - geom_text on a point - - columns name : Dog_Breed
-    #Dog category - color of point - columns name : category
-    #Size of dog - size of point - columns name : size category
-    #data score - x aixs - columns name : ultimate top dog data score
-    #popularity - y axis - columns name : popular rating 
-    #intellegence - shape of point - columns name : intellengence category 
-      #need to mutate a column to do either or
-    #Legnends and explainations
+```{r fig.height = 10, fig.width = 10, fig.align = "center", warning=FALSE}
+#Creating the plot
+
+xpoint <- (max(bestInShowFullClean$`ULTIMATE TOP DOG MEGA SCORE`) + min(bestInShowFullClean$`ULTIMATE TOP DOG MEGA SCORE`))/2
+ypoint <- median(bestInShowFullClean$popularScale)
+
+
 ggplot(data = bestInShowFullClean, aes(x=`ULTIMATE TOP DOG MEGA SCORE`, 
-                                       y=`POPULAR RATING`, 
-                                       color = category)) +
-  geom_point(aes(shape = `size category`)) +
+                                       y=popularScale)) +
+  geom_point(aes(shape = `size category`, 
+                 size = IntellegenceEitherOr,
+                 color = category),
+             alpha = .2) +
   geom_text(aes(label=Dog_Breed,
-                vjust = 1.3),
+                color = category,
+                vjust = 1.35),
             size = 2.5,
             alpha = .75) + 
-  scale_shape_manual(values = c(1,1.75,2.75)) + 
   scale_x_continuous(limits = c(.97,3.70)) +
-  ylim(-3.0,95.0) +
+  ylim(-95,1) + #For some reason the defualt bounds squish everything together
   xlab("Data Score") + 
   ylab("Popularity") +
-  labs(title = "Best in Show: The Ultimate Data Dog V2",color = "Dog Type", shape = "Dog Size") +
+  labs(title = "Best in Show: The Ultimate Data Dog V2",color = "Dog Type", shape = "Dog Size", size = "Intelligence") +
+  scale_size_discrete(labels = c("Dumb","Smart")) +
   theme(
    axis.text.x = element_blank(),
    axis.text.y = element_blank(),
-   axis.ticks = element_blank()) 
+   axis.ticks = element_blank()) + 
+  geom_segment(inherit.aes = FALSE,
+               aes(x= xpoint,
+                   xend= xpoint,
+                   y=0,
+                   yend = -95),
+            arrow=arrow(ends = "last", type = "closed")) +
+   geom_segment(inherit.aes = FALSE,
+               aes(x= xpoint,
+                   xend= xpoint,
+                   yend=0,
+                   y = -95),
+            arrow=arrow(ends = "last", type = "closed")) +
+  geom_line(aes(y= ypoint),
+            arrow=arrow(ends = "last", type = "closed")) 
   
 
 ```
+
+
+For my plot To handle overlap I chose to make the plot be slightly larger giving everything room to spread out. Additionally I found that using ylim() and setting custom bounds made everything be more evenly spaced, when i removed this the breeds seemed to get squished upwards. In regards to additional cleaning I had to do. I chose to make the dogs with above average intelligence or better the "smart" dogs to reflect the original plot only having two levels for intelligence. Additionally I had to negate the popularity score so that more popular dogs would be at the top of the graph. I believe the different y axis scaling along with the larger space make my plot more readable and easier to digest than the original plot. One design choice I want to explain is the choice to have the size of the point not reflect the size of the animal. I did this for 2 reasons. The first is that I could not make the sizes easy to distinguish without having the largest size much larger than the medium size. Secondly With the larger points there was more overlap. So in an effort to reduce overlap and also keep the points easy to quickly understand what is big and what is small I chose to make size of point correspond to intelligence of the dog. An explanation for people who don't like the non intuitiveness of this is that dogs with bigger brains (IE Smarter) have bigger points. 
